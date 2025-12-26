@@ -127,11 +127,11 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         # `torch.distributions.Distribution` object. It's up to you!
 
         mean = self.mean_net(observation)
-        std = torch.exp(self.logstd)
+        # std = torch.exp(self.logstd)
 
-        dist = distributions.Normal(mean, std)
-        action = dist.sample()
-        return action
+        # dist = distributions.Normal(mean, std)
+        # action = dist.sample()
+        return mean
 
     def update(self, observations, actions):
         """
@@ -143,12 +143,12 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             dict: 'Training Loss': supervised learning loss
         """
         # update the policy and return the loss. Recall that to update the policy
-        # you need to backpropagate the gradient and step the optimizer.
-        loss_fn = nn.MSELoss()
-        
-        preds = self(observations)
+        # you need to backpropagate the gradient and step the optimizer.\
+        observations = ptu.from_numpy(observations)
+        actions = ptu.from_numpy(actions)
 
-        loss = loss_fn(preds, actions)
+        preds = self(observations)
+        loss = nn.MSELoss()(preds, actions)
 
         self.optimizer.zero_grad()
         loss.backward()
